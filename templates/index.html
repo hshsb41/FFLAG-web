@@ -1,1 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CKRPRO | FF PREMIUM</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --accent: #ff3e3e;
+            --glass-card: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex; justify-content: center; align-items: center;
+            font-family: -apple-system, system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Fire Particles Background */
+        #bg-particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+
+        .particle {
+            position: absolute; bottom: -20px;
+            background: linear-gradient(to top, #ff4500, #ff8c00);
+            border-radius: 50%;
+            opacity: 0.5;
+            filter: blur(1.5px);
+            animation: burn linear infinite;
+        }
+
+        @keyframes burn {
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
+        }
+
+        /* Borderless Glass Card */
+        .glass-card {
+            width: 280px;
+            background: var(--glass-card);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 35px;
+            border: none;
+            padding: 30px 20px;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        .banner {
+            font-size: 10px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            opacity: 0.7;
+        }
+
+        input {
+            width: 100%;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 20px;
+        }
+
+        /* Clean Button - Glow Removed */
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            font-weight: 800;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.2s ease-in-out;
+            box-shadow: none; /* Glow/Light effect removed */
+        }
+
+        button:active { 
+            transform: scale(0.96); 
+            opacity: 0.9; 
+        }
+
+        #complete-text {
+            display: none;
+            margin-top: 15px;
+            font-size: 9px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 9px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+        }
+
+        .swal2-popup {
+            background: rgba(15, 15, 15, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 25px !important;
+            width: 250px !important;
+        }
+        .swal2-title { font-size: 15px !important; color: #fff !important; }
+    </style>
+</head>
+<body>
+
+    <div id="bg-particles"></div>
+
+    <div class="glass-card">
+        <div class="banner">FREE FIRE LAG TOOL</div>
+        
+        <input type="number" id="uidBox" placeholder="ENTER UID" inputmode="numeric">
+        
+        <button onclick="startLag()">SEND LAG</button>
+
+        <div id="complete-text">COMPLETE LAG</div>
+        
+        <div class="footer">DEV CKRPRO</div>
+    </div>
+
+    <script>
+        const container = document.getElementById('bg-particles');
+        function createFire() {
+            const p = document.createElement('div');
+            const size = Math.random() * 4 + 2 + 'px';
+            p.classList.add('particle');
+            p.style.width = size; p.style.height = size;
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.animationDuration = Math.random() * 3 + 2 + 's';
+            container.appendChild(p);
+            setTimeout(() => p.remove(), 5000);
+        }
+        setInterval(createFire, 120);
+
+        async function startLag() {
+            const uid = document.getElementById('uidBox').value;
+            const successText = document.getElementById('complete-text');
+
+            if(!uid) {
+                Swal.fire({ title: 'UID REQUIRED', icon: 'warning', confirmButtonColor: '#ff3e3e' });
+                return;
+            }
+
+            Swal.fire({
+                title: 'SYNCING...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const res = await fetch('/send_lag', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({uid: uid})
+                });
+                const data = await res.json();
+
+                if(data.status === 'success') {
+                    Swal.fire({ title: 'SUCCESS', icon: 'success', timer: 1000, showConfirmButton: false });
+                    successText.style.display = 'block';
+                } else {
+                    Swal.fire({ title: 'FAILED', icon: 'error' });
+                }
+            } catch (e) {
+                Swal.fire({ title: 'ERROR', icon: 'error' });
+            }
+        }
+    </script>
+</body>
+</html>
